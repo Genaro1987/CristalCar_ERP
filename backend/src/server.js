@@ -1,76 +1,68 @@
-const crypto = require('node:crypto')
-const express = require('express')
-const cors = require('cors')
-const dotenv = require('dotenv')
-const { createClient } = require('@libsql/client')
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import { db } from './db/index.js'
+
+// Rotas
+import authRoutes from './routes/auth.js'
+import funcionariosRoutes from './routes/funcionarios.js'
+import usuariosRoutes from './routes/usuarios.js'
+import planoContasRoutes from './routes/planoContas.js'
+import planoDRERoutes from './routes/planoDRE.js'
+import bancosRoutes from './routes/bancos.js'
+import movimentacoesRoutes from './routes/movimentacoes.js'
+import notasFiscaisVendaRoutes from './routes/notasFiscaisVenda.js'
+import notasFiscaisCompraRoutes from './routes/notasFiscaisCompra.js'
+import objetivosRoutes from './routes/objetivos.js'
+import relatoriosRoutes from './routes/relatorios.js'
 
 dotenv.config()
 
 const PORT = process.env.PORT || 4000
-
-if (!process.env.TURSO_DATABASE_URL) {
-  throw new Error('TURSO_DATABASE_URL não configurado. Atualize o arquivo .env.')
-}
-
-if (!process.env.TURSO_AUTH_TOKEN) {
-  console.warn('Aviso: TURSO_AUTH_TOKEN não configurado. Conexões públicas podem falhar.')
-}
-
-const turso = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN
-})
-
 const app = express()
 
+// CORS
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean)
 
 app.use(cors({
-  origin: allowedOrigins.length > 0 ? allowedOrigins : '*'
+  origin: allowedOrigins.length > 0 ? allowedOrigins : '*',
+  credentials: true
 }))
-app.use(express.json())
 
+app.use(express.json({ limit: '50mb' }))
+app.use(express.urlencoded({ extended: true, limit: '50mb' }))
+
+// Health check
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-app.get('/customers', async (_req, res, next) => {
-  try {
-    const result = await turso.execute('SELECT id, name, email FROM customers ORDER BY name LIMIT 100')
-    res.json(result.rows)
-  } catch (error) {
-    next(error)
-  }
-})
+// Rotas da API
+app.use('/api/auth', authRoutes)
+app.use('/api/funcionarios', funcionariosRoutes)
+app.use('/api/usuarios', usuariosRoutes)
+app.use('/api/plano-contas', planoContasRoutes)
+app.use('/api/plano-dre', planoDRERoutes)
+app.use('/api/bancos', bancosRoutes)
+app.use('/api/movimentacoes', movimentacoesRoutes)
+app.use('/api/notas-fiscais-venda', notasFiscaisVendaRoutes)
+app.use('/api/notas-fiscais-compra', notasFiscaisCompraRoutes)
+app.use('/api/objetivos', objetivosRoutes)
+app.use('/api/relatorios', relatoriosRoutes)
 
-app.post('/customers', async (req, res, next) => {
-  const { name, email } = req.body
-
-  if (!name || !email) {
-    return res.status(400).json({ message: 'Campos name e email são obrigatórios.' })
-  }
-
-  try {
-    const id = crypto.randomUUID()
-    await turso.execute({
-      sql: 'INSERT INTO customers (id, name, email) VALUES (?, ?, ?)',
-      args: [id, name, email]
-    })
-
-    res.status(201).json({ id, name, email })
-  } catch (error) {
-    next(error)
-  }
-})
-
+// Error handler
 app.use((error, _req, res, _next) => {
-  console.error(error)
-  res.status(500).json({ message: 'Erro interno inesperado.' })
+  console.error('Error:', error)
+  res.status(error.status || 500).json({
+    error: error.message || 'Erro interno do servidor',
+    details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+  })
 })
 
 app.listen(PORT, () => {
-  console.log(`API ouvindo na porta ${PORT}`)
+  console.log(`🚀 API CristalCar ERP rodando na porta ${PORT}`)
+  console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`)
 })
