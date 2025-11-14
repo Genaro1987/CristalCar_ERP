@@ -11,7 +11,9 @@
     "lint": "eslint .",
     "db:generate": "drizzle-kit generate:sqlite",
     "db:push": "drizzle-kit push:sqlite",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:check": "node scripts/check-turso.js",
+    "db:init": "node scripts/init-database.js"
   },
   "dependencies": {
     "@libsql/client": "^0.4.0",
