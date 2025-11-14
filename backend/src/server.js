@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import { db } from './db/index.js'
 
 // Rotas
+import setupRoutes from './routes/setup.js'
 import authRoutes from './routes/auth.js'
 import funcionariosRoutes from './routes/funcionarios.js'
 import usuariosRoutes from './routes/usuarios.js'
@@ -41,6 +42,7 @@ app.get('/health', (_req, res) => {
 })
 
 // Rotas da API
+app.use('/api/setup', setupRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/funcionarios', funcionariosRoutes)
 app.use('/api/usuarios', usuariosRoutes)
