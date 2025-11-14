@@ -43,10 +43,9 @@ export default function PlanoContasPage() {
 
   const fetchContas = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
       const token = localStorage.getItem('token')
 
-      const response = await fetch(`${apiUrl}/api/plano-contas`, {
+      const response = await fetch('/api/plano-contas', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -69,10 +68,9 @@ export default function PlanoContasPage() {
     setLoading(true)
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
       const token = localStorage.getItem('token')
 
-      const response = await fetch(`${apiUrl}/api/plano-contas`, {
+      const response = await fetch('/api/plano-contas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -40,10 +40,9 @@ export default function MovimentacaoFinanceiraPage() {
 
   const fetchMovimentacoes = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
       const token = localStorage.getItem('token')
 
-      const response = await fetch(`${apiUrl}/api/movimentacoes`, {
+      const response = await fetch('/api/movimentacoes', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -66,10 +65,9 @@ export default function MovimentacaoFinanceiraPage() {
     setLoading(true)
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
       const token = localStorage.getItem('token')
 
-      const response = await fetch(`${apiUrl}/api/movimentacoes`, {
+      const response = await fetch('/api/movimentacoes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
